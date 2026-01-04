@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="index.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body>
@@ -148,6 +151,9 @@
                             <option value="income">Receitas</option>
                             <option value="expense">Despesas</option>
                         </select>
+                        <button class="btn btn-secondary" id="report-btn" title="Baixar Relatório PDF">
+                            <span class="btn-icon">📄</span>
+                        </button>
                     </div>
                 </div>
                 <div class="table-container">
