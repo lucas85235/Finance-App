@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard de organização financeira pessoal">
+    <title>💰 Finance Dashboard</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo">💰</span>
+                <h1>Finance Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="ui.showCategoriesModal()" title="Gerenciar Categorias">
+                    <span class="btn-icon">🏷️</span>
+                    Categorias
+                </button>
+                <label class="btn btn-secondary" for="import-file">
+                    <span class="btn-icon">📥</span>
+                    Importar CSV
+                </label>
+                <input type="file" id="import-file" accept=".csv" hidden>
+                <button class="btn btn-secondary" id="export-btn">
+                    <span class="btn-icon">📤</span>
+                    Exportar CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-card income">
+                <div class="card-icon">📈</div>
+                <div class="card-content">
+                    <span class="card-label">Receitas</span>
+                    <span class="card-value" id="total-income">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="summary-card expense">
+                <div class="card-icon">📉</div>
+                <div class="card-content">
+                    <span class="card-label">Despesas</span>
+                    <span class="card-value" id="total-expense">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="summary-card balance">
+                <div class="card-icon">💎</div>
+                <div class="card-content">
+                    <span class="card-label">Saldo</span>
+                    <span class="card-value" id="total-balance">R$ 0,00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transaction Form -->
+        <section class="form-section">
+            <h2 class="section-title">➕ Nova Transação</h2>
+            <form id="transaction-form" class="transaction-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Tipo</label>
+                        <select id="type" name="type" required>
+                            <option value="income">💵 Receita</option>
+                            <option value="expense">💸 Despesa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Valor (R$)</label>
+                        <input type="number" id="amount" name="amount" step="0.01" min="0.01" placeholder="0,00"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Categoria</label>
+                        <select id="category" name="category" required>
+                            <option value="Salário">💼 Salário</option>
+                            <option value="Freelance">💻 Freelance</option>
+                            <option value="Investimentos">📊 Investimentos</option>
+                            <option value="Outros Receita">💰 Outros</option>
+                            <option value="Alimentação">🍔 Alimentação</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Moradia">🏠 Moradia</option>
+                            <option value="Saúde">🏥 Saúde</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Lazer">🎮 Lazer</option>
+                            <option value="Compras">🛒 Compras</option>
+                            <option value="Contas">📄 Contas</option>
+                            <option value="Outros Despesa">📦 Outros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label for="description">Descrição</label>
+                        <input type="text" id="description" name="description" placeholder="Ex: Salário do mês"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="account">Conta</label>
+                        <input type="text" id="account" name="account" placeholder="Ex: C6, Nubank">
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Data</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group form-submit">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-icon">✓</span>
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Transactions Table -->
+            <section class="table-section">
+                <div class="section-header">
+                    <h2 class="section-title">📋 Transações</h2>
+                    <div class="filter-group">
+                        <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar..."
+                            title="Buscar por descrição">
+                        <select id="filter-period" class="filter-select" title="Filtrar por período">
+                            <option value="all">Todos os períodos</option>
+                        </select>
+                        <select id="filter-type" class="filter-select" title="Filtrar por tipo">
+                            <option value="all">Todos</option>
+                            <option value="income">Receitas</option>
+                            <option value="expense">Despesas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Conta</th>
+                                <th>Valor</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-body">
+                            <!-- Transactions will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div class="empty-state" id="empty-state">
+                        <span class="empty-icon">📭</span>
+                        <p>Nenhuma transação cadastrada</p>
+                        <span class="empty-hint">Adicione sua primeira transação acima</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Category Chart -->
+                <section class="chart-section">
+                    <h2 class="section-title">📊 Gastos por Categoria</h2>
+                    <div class="chart-container">
+                        <canvas id="category-chart"></canvas>
+                        <div class="chart-empty" id="chart-empty">
+                            <span class="empty-icon">📈</span>
+                            <p>Adicione despesas para ver o gráfico</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Monthly Evolution Chart -->
+                <section class="chart-section">
+                    <h2 class="section-title">📈 Evolução Mensal</h2>
+                    <div class="chart-container chart-container-wide">
+                        <canvas id="monthly-chart"></canvas>
+                        <div class="chart-empty" id="monthly-chart-empty">
+                            <span class="empty-icon">📉</span>
+                            <p>Adicione transações para ver a evolução</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Top 5 Expenses -->
+            <section class="chart-section" style="margin-top: var(--spacing-xl);">
+                <h2 class="section-title">🏆 Top 5 Despesas</h2>
+                <div class="top-expenses-container" id="top-expenses-list">
+                    <!-- Top expenses will be inserted here -->
+                    <div class="empty-state">
+                        <p>Adicione despesas para ver o ranking</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal-overlay" id="edit-modal" hidden>
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>✏️ Editar Transação</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
+                </div>
+                <form id="edit-form" class="transaction-form">
+                    <input type="hidden" id="edit-id" name="id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-type">Tipo</label>
+                            <select id="edit-type" name="type" required>
+                                <option value="income">💵 Receita</option>
+                                <option value="expense">💸 Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-amount">Valor (R$)</label>
+                            <input type="number" id="edit-amount" name="amount" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-category">Categoria</label>
+                            <select id="edit-category" name="category" required>
+                                <option value="Salário">💼 Salário</option>
+                                <option value="Freelance">💻 Freelance</option>
+                                <option value="Investimentos">📊 Investimentos</option>
+                                <option value="Outros Receita">💰 Outros</option>
+                                <option value="Alimentação">🍔 Alimentação</option>
+                                <option value="Transporte">🚗 Transporte</option>
+                                <option value="Moradia">🏠 Moradia</option>
+                                <option value="Saúde">🏥 Saúde</option>
+                                <option value="Educação">📚 Educação</option>
+                                <option value="Lazer">🎮 Lazer</option>
+                                <option value="Compras">🛒 Compras</option>
+                                <option value="Contas">📄 Contas</option>
+                                <option value="Outros Despesa">📦 Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="edit-description">Descrição</label>
+                            <input type="text" id="edit-description" name="description" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-account">Conta</label>
+                            <input type="text" id="edit-account" name="account">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-date">Data</label>
+                            <input type="date" id="edit-date" name="date" required>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="modal-cancel">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-icon">✓</span>
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Modal -->
+    <div class="modal-overlay" id="categories-modal" hidden>
+        <div class="modal">
+            <div class="modal-header">
+                <h3>🏷️ Gerenciar Categorias</h3>
+                <button class="modal-close" id="categories-close">&times;</button>
+            </div>
+
+            <div class="categories-container">
+                <!-- Add New Category Form -->
+                <form id="add-category-form" class="add-category-form">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="new-cat-name">Nome</label>
+                            <input type="text" id="new-cat-name" placeholder="Ex: Viagem" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-cat-icon">Ícone</label>
+                            <select id="new-cat-icon">
+                                <option value="📦">📦</option>
+                                <option value="✈️">✈️</option>
+                                <option value="💊">💊</option>
+                                <option value="🎓">🎓</option>
+                                <option value="🎉">🎉</option>
+                                <option value="🔧">🔧</option>
+                                <option value="👶">👶</option>
+                                <option value="🐕">🐕</option>
+                                <option value="🏦">🏦</option>
+                                <option value="💳">💳</option>
+                                <option value="🍽️">🍽️</option>
+                                <option value="🚌">🚌</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-cat-type">Tipo</label>
+                            <select id="new-cat-type">
+                                <option value="expense">💸 Despesa</option>
+                                <option value="income">💵 Receita</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="align-self: flex-end;">
+                            <button type="submit" class="btn btn-primary" style="margin-top: 0;">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Categories List -->
+                <div class="categories-list-header">
+                    <span>Minhas Categorias</span>
+                    <small>Clique no 🗑️ para remover</small>
+                </div>
+                <div class="categories-list" id="categories-list">
+                    <!-- Categories will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="csv-handler.js"></script>
+    <script src="app.js"></script>
+    <script src="test-runner.js"></script>
+</body>
+
+</html>
