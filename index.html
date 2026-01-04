@@ -33,6 +33,16 @@
                     <span class="btn-icon">📤</span>
                     Exportar CSV
                 </button>
+                <!-- JSON Backup Controls -->
+                <button class="btn btn-secondary" id="backup-btn" title="Backup completo (JSON)">
+                    <span class="btn-icon">💾</span>
+                    Backup
+                </button>
+                <label class="btn btn-secondary" for="restore-file" title="Restaurar backup (JSON)">
+                    <span class="btn-icon">♻️</span>
+                    Restaurar
+                </label>
+                <input type="file" id="restore-file" accept=".json" hidden>
             </div>
         </header>
 

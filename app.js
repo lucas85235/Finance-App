@@ -371,10 +371,130 @@ class UIController {
             if (e.target === this.editModal) this.hideEditModal();
         });
 
-        // Keyboard shortcut (Escape to close modal)
+
+        // Restore JSON
+        const restoreInput = document.getElementById('restore-file');
+        if (restoreInput) {
+            restoreInput.addEventListener('change', (e) => this.handleRestore(e));
+        }
+
+        // Backup JSON
+        const backupBtn = document.getElementById('backup-btn');
+        if (backupBtn) {
+            backupBtn.addEventListener('click', () => this.handleBackup());
+        }
+
+        // Initialize Keyboard Shortcuts
+        this.initKeyboardShortcuts();
+    }
+
+    // Handle JSON Backup
+    handleBackup() {
+        const data = {
+            transactions: this.fm.transactions,
+            categories: this.fm.categories,
+            backupDate: new Date().toISOString(),
+            version: '1.0'
+        };
+
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = `finance_backup_${new Date().toISOString().slice(0, 10)}.json`;
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+
+        this.showToast('Backup realizado com sucesso! 💾');
+    }
+
+    // Handle JSON Restore
+    handleRestore(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+
+                if (!data.transactions || !Array.isArray(data.transactions)) {
+                    throw new Error('Arquivo de backup inválido: transações não encontradas.');
+                }
+
+                if (confirm(`Deseja restaurar ${data.transactions.length} transações e categorias? Isso substituirá os dados atuais.`)) {
+                    // Update FinanceManager state
+                    this.fm.transactions = data.transactions;
+                    if (data.categories && Array.isArray(data.categories)) {
+                        this.fm.categories = data.categories;
+                    }
+
+                    this.fm.saveToStorage();
+                    this.fm.saveCategories();
+
+                    // Reset UI
+                    this.renderTransactions();
+                    this.renderSummary();
+                    this.renderChart();
+                    this.renderMonthlyChart();
+                    this.renderTopExpenses();
+
+                    this.showToast('Dados restaurados com sucesso! ♻️');
+                }
+            } catch (error) {
+                console.error('Restore error:', error);
+                alert('Erro ao restaurar arquivo: ' + error.message);
+            }
+            // Reset input so same file can be selected again
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    // Initialize Keyboard Shortcuts
+    initKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !this.editModal.hidden) {
-                this.hideEditModal();
+            // Ignore if focus is on an input/textarea (except for Escape and Ctrl+Enter)
+            // But allow 'Esc' and 'Ctrl+Enter' even if focused
+            const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+            // Escape: Close Modals
+            if (e.key === 'Escape') {
+                if (!this.editModal.hidden) this.hideEditModal();
+                if (!this.categoriesModal.hidden) this.hideCategoriesModal();
+                return;
+            }
+
+            // Ctrl + Enter: Submit Forms
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (!this.editModal.hidden) {
+                    this.handleEditSubmit(e);
+                    return;
+                }
+                if (!this.categoriesModal.hidden) {
+                    this.handleCategorySubmit(e);
+                    return;
+                }
+                // Default form (new transaction)
+                this.handleFormSubmit(e);
+                return;
+            }
+
+            // 'N': Focus New Transaction Type (if not already typing)
+            if (e.key.toLowerCase() === 'n' && !isInput) {
+                e.preventDefault();
+                document.getElementById('type').focus();
+                // Helper to open select if possible (limited browser support)
+                return;
+            }
+
+            // '/': Focus Search (if not already typing)
+            if (e.key === '/' && !isInput) {
+                e.preventDefault();
+                this.searchInput.focus();
+                return;
             }
         });
     }
