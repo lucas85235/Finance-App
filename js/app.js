@@ -11,14 +11,19 @@ import { initFinancingUI } from './views/FinancingUI.js';
 let fm, ui;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Transaction Manager
-    fm = new FinanceManager();
-    ui = new UIController(fm);
+    try {
+        // Transaction Manager
+        fm = new FinanceManager();
 
-    // Financing Manager
-    initFinancingUI();
+        ui = new UIController(fm);
 
-    // Expose to window for inline onclick handlers
-    window.ui = ui;
-    window.fm = fm;
+        // Financing Manager
+        initFinancingUI();
+
+        // Expose to window for inline onclick handlers
+        window.ui = ui;
+        window.fm = fm;
+    } catch (error) {
+        console.error('CRITICAL APP ERROR:', error);
+    }
 });

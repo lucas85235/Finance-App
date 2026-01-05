@@ -14,18 +14,57 @@ export class UIController {
         this.initElements();
         this.initEventListeners();
         this.setDefaultDate();
+        this.switchView('dashboard'); // Default view
         this.render();
+    }
+
+    // View Switching
+    switchView(viewName) {
+        // Hide all views
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        // Show selected view
+        const targetView = document.getElementById(`view-${viewName}`);
+        if (targetView) {
+            targetView.classList.add('active');
+            // Update Nav Item
+            const navItem = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+            if (navItem) navItem.classList.add('active');
+
+            // Update Page Title
+            const titleMap = {
+                'dashboard': 'Dashboard',
+                'transactions': 'Transações',
+                'categories': 'Categorias',
+                'financing': 'Financiamentos',
+                'reports': 'Relatórios',
+                'data': 'Gerenciar Dados'
+            };
+            document.getElementById('page-title').textContent = titleMap[viewName] || 'Finance';
+        }
     }
 
     // Initialize DOM elements
     initElements() {
-        this.form = document.getElementById('transaction-form');
+        // new shell elements
+        this.navItems = document.querySelectorAll('.nav-item');
+
+        // Form & Table (may be in transactions view)
+        this.form = document.getElementById('transaction-form'); // This form might be hidden or moved to inspector/modal
+        // Note: In new layout, new transaction is via button -> inspector/modal. 
+        // For phase 1 we kept existing hidden modal structure or form. 
+        // Let's assume form still exists in DOM but might need to be targeted correctly.
+
         this.tableBody = document.getElementById('transactions-body');
         this.emptyState = document.getElementById('empty-state');
         this.chartEmpty = document.getElementById('chart-empty');
         this.filterSelect = document.getElementById('filter-type');
-        this.periodSelect = document.getElementById('filter-period');
+        this.periodSelect = document.getElementById('filter-period-global'); // Global in topbar
+
+        // View-specific elements
         this.searchInput = document.getElementById('search-input');
+
         this.importInput = document.getElementById('import-file');
         this.exportBtn = document.getElementById('export-btn');
 
@@ -39,24 +78,35 @@ export class UIController {
 
         this.topExpensesList = document.getElementById('top-expenses-list');
 
-        this.editModal = document.getElementById('edit-modal');
-        this.editForm = document.getElementById('edit-form');
-        this.modalClose = document.getElementById('modal-close');
-        this.modalCancel = document.getElementById('modal-cancel');
+
 
         this.categoriesModal = document.getElementById('categories-modal');
         this.categoriesList = document.getElementById('categories-list');
         this.addCategoryForm = document.getElementById('add-category-form');
         this.categoriesClose = document.getElementById('categories-close');
+
+        // Inspector
+        this.appShell = document.getElementById('app-shell');
+        this.inspectorContent = document.getElementById('inspector-content');
     }
 
     initEventListeners() {
-        this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
+        // Navigation Logic
+        this.navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const view = item.getAttribute('data-view');
+                this.switchView(view);
+            });
+        });
+
+        // Use optional chaining or element check before adding listeners
+        if (this.form) this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         this.addCategoryForm.addEventListener('submit', (e) => this.handleCategorySubmit(e));
         this.categoriesClose.addEventListener('click', () => this.hideCategoriesModal());
 
         window.addEventListener('click', (e) => {
-            if (e.target === this.editModal) this.hideEditModal();
+            // if (e.target === this.editModal) this.hideEditModal(); // removed
             if (e.target === this.categoriesModal) this.hideCategoriesModal();
         });
 
@@ -85,12 +135,10 @@ export class UIController {
 
         this.importInput.addEventListener('change', (e) => this.handleImport(e));
 
-        this.editForm.addEventListener('submit', (e) => this.handleEditSubmit(e));
-        this.modalClose.addEventListener('click', () => this.hideEditModal());
-        this.modalCancel.addEventListener('click', () => this.hideEditModal());
-        this.editModal.addEventListener('click', (e) => {
-            if (e.target === this.editModal) this.hideEditModal();
-        });
+        // this.editForm is gone, dynamic handling inspector listener is attached in renderEditTransactionInspector
+        // but global click close?
+        // if (e.target.classList.contains('inspector-overlay')?? no overlay, just side panel)
+
 
         const restoreInput = document.getElementById('restore-file');
         if (restoreInput) {
@@ -115,14 +163,16 @@ export class UIController {
             const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
 
             if (e.key === 'Escape') {
-                if (!this.editModal.hidden) this.hideEditModal();
+                if (this.appShell.classList.contains('inspector-open')) this.closeInspector();
                 if (!this.categoriesModal.hidden) this.hideCategoriesModal();
                 return;
             }
 
             if (e.ctrlKey && e.key === 'Enter') {
-                if (!this.editModal.hidden) {
-                    this.handleEditSubmit(e);
+                if (this.appShell.classList.contains('inspector-open')) {
+                    // Trigger submit on inspector form
+                    const form = document.getElementById('inspector-edit-form');
+                    if (form) form.dispatchEvent(new Event('submit'));
                     return;
                 }
                 if (!this.categoriesModal.hidden) {
@@ -177,6 +227,94 @@ export class UIController {
         showToast('Transação adicionada com sucesso!', 'success');
     }
 
+    // Inspector System
+    openInspector(type, data) {
+        this.appShell.classList.add('inspector-open');
+
+        switch (type) {
+            case 'edit-transaction':
+                this.renderEditTransactionInspector(data);
+                break;
+            default:
+                this.inspectorContent.innerHTML = '<p class="text-muted">Selecione um item</p>';
+        }
+    }
+
+    closeInspector() {
+        this.appShell.classList.remove('inspector-open');
+        // Clear content after animation?
+        setTimeout(() => {
+            if (!this.appShell.classList.contains('inspector-open')) {
+                this.inspectorContent.innerHTML = '<p class="text-muted" style="text-align: center; margin-top: 2rem;">Selecione um item para ver detalhes</p>';
+            }
+        }, 300);
+    }
+
+    renderEditTransactionInspector(id) {
+        const transaction = this.fm.getTransaction(id);
+        if (!transaction) return;
+
+        const isExpense = transaction.type === 'expense';
+        const isIncome = transaction.type === 'income';
+
+        this.inspectorContent.innerHTML = `
+            <div class="inspector-form-container">
+                <form id="inspector-edit-form" class="inspector-form">
+                    <input type="hidden" name="id" value="${transaction.id}">
+                    
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="type" id="inspector-edit-type" class="form-control">
+                           <option value="expense" ${isExpense ? 'selected' : ''}>Despesa</option>
+                           <option value="income" ${isIncome ? 'selected' : ''}>Receita</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" name="description" class="form-control" value="${escapeHtml(transaction.description)}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" value="${transaction.amount}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select name="category" id="inspector-edit-category" class="form-control">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Conta / Origem</label>
+                        <input type="text" name="account" class="form-control" value="${escapeHtml(transaction.account || '')}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" name="date" class="form-control" value="${transaction.date}" required>
+                    </div>
+
+                    <div class="form-actions-inspector">
+                         <button type="submit" class="btn btn-primary btn-block">Salvar Alterações</button>
+                         <button type="button" class="btn btn-secondary btn-block" onclick="ui.closeInspector()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // Populate Categories
+        this.populateCategorySelects();
+        // Set value after population (since populate resets it)
+        const catSelect = document.getElementById('inspector-edit-category');
+        if (catSelect) catSelect.value = transaction.category;
+
+        // Attach listener
+        document.getElementById('inspector-edit-form').addEventListener('submit', (e) => this.handleEditSubmit(e));
+    }
+
     handleDelete(id) {
         if (this.fm.deleteTransaction(id)) {
             this.render();
@@ -185,29 +323,18 @@ export class UIController {
     }
 
     showEditModal(id) {
-        const transaction = this.fm.getTransaction(id);
-        if (!transaction) return;
-
-        document.getElementById('edit-id').value = transaction.id;
-        document.getElementById('edit-type').value = transaction.type;
-        document.getElementById('edit-amount').value = transaction.amount;
-        document.getElementById('edit-description').value = transaction.description;
-        document.getElementById('edit-category').value = transaction.category;
-        document.getElementById('edit-account').value = transaction.account || '';
-        document.getElementById('edit-date').value = transaction.date;
-
-        this.editModal.hidden = false;
+        // Legacy support redirected to inspector
+        this.openInspector('edit-transaction', id);
     }
 
     hideEditModal() {
-        this.editModal.hidden = true;
-        this.editForm.reset();
+        this.closeInspector();
     }
 
     handleEditSubmit(e) {
         e.preventDefault();
 
-        const formData = new FormData(this.editForm);
+        const formData = new FormData(e.target);
         const id = formData.get('id');
         const updates = {
             type: formData.get('type'),
@@ -224,7 +351,8 @@ export class UIController {
         }
 
         if (this.fm.updateTransaction(id, updates)) {
-            this.hideEditModal();
+            // this.hideEditModal(); // Use closeInspector
+            this.closeInspector();
             this.render();
             showToast('Transação atualizada!', 'success');
         }
@@ -383,7 +511,7 @@ export class UIController {
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn btn-edit" onclick="ui.showEditModal('${t.id}')" title="Editar">
+                        <button class="btn btn-edit" onclick="ui.openInspector('edit-transaction', '${t.id}')" title="Editar">
                             ✏️
                         </button>
                         <button class="btn btn-danger" onclick="ui.handleDelete('${t.id}')" title="Excluir">
@@ -597,7 +725,7 @@ export class UIController {
     }
 
     populateCategorySelects() {
-        const selectIds = ['category', 'edit-category'];
+        const selectIds = ['category', 'edit-category', 'inspector-edit-category'];
 
         selectIds.forEach(id => {
             const select = document.getElementById(id);

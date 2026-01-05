@@ -1,0 +1,226 @@
+/* ===== App Shell Layout ===== */
+#app-shell {
+    display: grid;
+    grid-template-columns: 250px 1fr 0px;
+    /* Sidebar | Main | Inspector (Closed) */
+    grid-template-rows: 60px 1fr;
+    /* Topbar | Content */
+    grid-template-areas:
+        "sidebar topbar topbar"
+        "sidebar main inspector";
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-primary);
+    overflow: hidden;
+    transition: grid-template-columns 0.3s ease;
+}
+
+#app-shell.inspector-open {
+    grid-template-columns: 250px 1fr 350px;
+    /* Inspector Open width */
+}
+
+/* ===== Sidebar ===== */
+#sidebar {
+    grid-area: sidebar;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    z-index: 10;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-logo {
+    font-size: 1.8rem;
+}
+
+.sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background-color: rgba(99, 102, 241, 0.1);
+    /* Primary Accent Low Opacity */
+    color: var(--accent-primary);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+/* ===== Topbar ===== */
+#topbar {
+    grid-area: topbar;
+    background-color: var(--bg-primary);
+    /* Match main bg or slight contrast */
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-lg);
+    z-index: 5;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.topbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.global-search {
+    width: 300px;
+    position: relative;
+}
+
+.global-search input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-left: 2.5rem;
+    border-radius: 20px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.global-search::before {
+    content: '🔍';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+/* ===== Main Content Area ===== */
+#main-content {
+    grid-area: main;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    position: relative;
+    /* Custom Scrollbar for Main */
+}
+
+.view {
+    display: none;
+    /* Hide all views by default */
+    animation: fadeIn 0.3s ease;
+}
+
+.view.active {
+    display: block;
+    /* Show active view */
+}
+
+/* ===== Inspector Panel ===== */
+#inspector {
+    grid-area: inspector;
+    background-color: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    /* Transformation handled by Grid Columns width, but we can animate opacity/translate safely */
+}
+
+.inspector-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inspector-content {
+    padding: var(--spacing-md);
+    flex: 1;
+}
+
+.inspector-close {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+/* ===== Utilities ===== */
+.hidden {
+    display: none !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #app-shell {
+        grid-template-columns: 0px 1fr 0px;
+        /* Hide Sidebar on mobile by default */
+        grid-template-areas:
+            "topbar topbar topbar"
+            "main main main";
+    }
+
+    /* We'll need a way to toggle sidebar on mobile, maybe overlay */
+    #sidebar.mobile-open {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 250px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    }
+}

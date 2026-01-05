@@ -8,6 +8,7 @@
     <title>💰 Finance Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/financing.css">
+    <link rel="stylesheet" href="css/shell.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- jsPDF & AutoTable -->
@@ -16,148 +17,135 @@
 </head>
 
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-left">
-                <span class="logo">💰</span>
-                <h1>Finance Dashboard</h1>
+    <div id="app-shell">
+        <!-- 1. Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">💰</span>
+                <span class="sidebar-title">Finance</span>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-secondary" onclick="ui.showCategoriesModal()" title="Gerenciar Categorias">
-                    <span class="btn-icon">🏷️</span>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="transactions">
+                    <span class="nav-icon">📋</span>
+                    Transações
+                </a>
+                <a href="#" class="nav-item" data-view="categories">
+                    <span class="nav-icon">🏷️</span>
                     Categorias
+                </a>
+                <a href="#" class="nav-item" data-view="financing">
+                    <span class="nav-icon">💸</span>
+                    Financiamentos
+                </a>
+                <a href="#" class="nav-item" data-view="reports">
+                    <span class="nav-icon">📑</span>
+                    Relatórios
+                </a>
+                <a href="#" class="nav-item" data-view="data">
+                    <span class="nav-icon">💾</span>
+                    Dados
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 2. Topbar -->
+        <header id="topbar">
+            <div class="topbar-left">
+                <h2 id="page-title" class="page-title">Dashboard</h2>
+            </div>
+            <div class="topbar-center">
+                <div class="global-search">
+                    <input type="text" placeholder="Buscar (Cmd+K)..." id="global-search-input">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <!-- Period Selector moved here -->
+                <select id="filter-period-global" class="filter-select" title="Filtrar por período">
+                    <option value="month">Este Mês</option>
+                    <option value="90days">Últimos 90 dias</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+
+                <button class="btn btn-secondary btn-sm" id="toggle-privacy" title="Ocultar valores">
+                    👁️
                 </button>
-                <label class="btn btn-secondary" for="import-file">
-                    <span class="btn-icon">📥</span>
-                    Importar CSV
-                </label>
-                <input type="file" id="import-file" accept=".csv" hidden>
-                <button class="btn btn-secondary" id="export-btn">
-                    <span class="btn-icon">📤</span>
-                    Exportar CSV
+                <button class="btn btn-primary" id="btn-new-transaction">
+                    + Nova
                 </button>
-                <!-- JSON Backup Controls -->
-                <button class="btn btn-secondary" id="backup-btn" title="Backup completo (JSON)">
-                    <span class="btn-icon">💾</span>
-                    Backup
-                </button>
-                <label class="btn btn-secondary" for="restore-file" title="Restaurar backup (JSON)">
-                    <span class="btn-icon">♻️</span>
-                    Restaurar
-                </label>
-                <input type="file" id="restore-file" accept=".json" hidden>
             </div>
         </header>
 
-        <!-- Summary Cards -->
-        <section class="summary-section">
-            <div class="summary-card income">
-                <div class="card-icon">📈</div>
-                <div class="card-content">
-                    <span class="card-label">Receitas</span>
-                    <span class="card-value" id="total-income">R$ 0,00</span>
-                </div>
-            </div>
-            <div class="summary-card expense">
-                <div class="card-icon">📉</div>
-                <div class="card-content">
-                    <span class="card-label">Despesas</span>
-                    <span class="card-value" id="total-expense">R$ 0,00</span>
-                </div>
-            </div>
-            <div class="summary-card balance">
-                <div class="card-icon">💎</div>
-                <div class="card-content">
-                    <span class="card-label">Saldo</span>
-                    <span class="card-value" id="total-balance">R$ 0,00</span>
-                </div>
-            </div>
-        </section>
+        <!-- 3. Main Content -->
+        <main id="main-content">
 
-        <!-- Transaction Form -->
-        <section class="form-section">
-            <h2 class="section-title">➕ Nova Transação</h2>
-            <form id="transaction-form" class="transaction-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="type">Tipo</label>
-                        <select id="type" name="type" required>
-                            <option value="income">💵 Receita</option>
-                            <option value="expense">💸 Despesa</option>
-                        </select>
+            <!-- View: Dashboard -->
+            <div id="view-dashboard" class="view active">
+                <section class="summary-section" id="dashboard-summary">
+                    <div class="summary-card income">
+                        <div class="card-icon">📈</div>
+                        <div class="card-content">
+                            <span class="card-label">Receitas</span>
+                            <span class="card-value" id="total-income">R$ 0,00</span>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="amount">Valor (R$)</label>
-                        <input type="number" id="amount" name="amount" step="0.01" min="0.01" placeholder="0,00"
-                            required>
+                    <div class="summary-card expense">
+                        <div class="card-icon">📉</div>
+                        <div class="card-content">
+                            <span class="card-label">Despesas</span>
+                            <span class="card-value" id="total-expense">R$ 0,00</span>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="category">Categoria</label>
-                        <select id="category" name="category" required>
-                            <option value="Salário">💼 Salário</option>
-                            <option value="Freelance">💻 Freelance</option>
-                            <option value="Investimentos">📊 Investimentos</option>
-                            <option value="Outros Receita">💰 Outros</option>
-                            <option value="Alimentação">🍔 Alimentação</option>
-                            <option value="Transporte">🚗 Transporte</option>
-                            <option value="Moradia">🏠 Moradia</option>
-                            <option value="Saúde">🏥 Saúde</option>
-                            <option value="Educação">📚 Educação</option>
-                            <option value="Lazer">🎮 Lazer</option>
-                            <option value="Compras">🛒 Compras</option>
-                            <option value="Contas">📄 Contas</option>
-                            <option value="Outros Despesa">📦 Outros</option>
-                        </select>
+                    <div class="summary-card balance">
+                        <div class="card-icon">💎</div>
+                        <div class="card-content">
+                            <span class="card-label">Saldo</span>
+                            <span class="card-value" id="total-balance">R$ 0,00</span>
+                        </div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group flex-2">
-                        <label for="description">Descrição</label>
-                        <input type="text" id="description" name="description" placeholder="Ex: Salário do mês"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label for="account">Conta</label>
-                        <input type="text" id="account" name="account" placeholder="Ex: C6, Nubank">
-                    </div>
-                    <div class="form-group">
-                        <label for="date">Data</label>
-                        <input type="date" id="date" name="date" required>
-                    </div>
-                    <div class="form-group form-submit">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="btn-icon">✓</span>
-                            Adicionar
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </section>
+                </section>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Transactions Table -->
-            <section class="table-section">
+                <div class="charts-grid">
+                    <section class="chart-section">
+                        <h2 class="section-title">📊 Gastos por Categoria</h2>
+                        <div class="chart-container">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                    </section>
+                    <section class="chart-section">
+                        <h2 class="section-title">📈 Evolução Mensal</h2>
+                        <div class="chart-container">
+                            <canvas id="monthly-chart"></canvas>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="chart-section" style="margin-top: 2rem;">
+                    <h2 class="section-title">🏆 Top 5 Despesas</h2>
+                    <div id="top-expenses-list"></div>
+                </section>
+            </div>
+
+            <!-- View: Transactions -->
+            <div id="view-transactions" class="view">
                 <div class="section-header">
-                    <h2 class="section-title">📋 Transações</h2>
                     <div class="filter-group">
-                        <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar..."
-                            title="Buscar por descrição">
-                        <select id="filter-period" class="filter-select" title="Filtrar por período">
-                            <option value="all">Todos os períodos</option>
-                        </select>
-                        <select id="filter-type" class="filter-select" title="Filtrar por tipo">
-                            <option value="all">Todos</option>
+                        <select id="filter-type" class="filter-select">
+                            <option value="all">Todos os Tipos</option>
                             <option value="income">Receitas</option>
                             <option value="expense">Despesas</option>
                         </select>
-                        <button class="btn btn-secondary" id="report-btn" title="Baixar Relatório PDF">
-                            <span class="btn-icon">📄</span>
-                        </button>
+                        <select id="filter-category" class="filter-select">
+                            <option value="all">Todas as Categorias</option>
+                            <!-- Populated via JS -->
+                        </select>
+                        <input type="text" id="search-input" class="search-input" placeholder="Filtrar na tabela...">
                     </div>
                 </div>
-                <div class="table-container">
+                <div class="table-container" style="height: calc(100vh - 200px);">
                     <table class="transactions-table">
                         <thead>
                             <tr>
@@ -166,270 +154,215 @@
                                 <th>Categoria</th>
                                 <th>Conta</th>
                                 <th>Valor</th>
-                                <th>Ação</th>
                             </tr>
                         </thead>
                         <tbody id="transactions-body">
-                            <!-- Transactions will be inserted here -->
+                            <!-- Transactions injected here -->
                         </tbody>
                     </table>
                     <div class="empty-state" id="empty-state">
                         <span class="empty-icon">📭</span>
                         <p>Nenhuma transação cadastrada</p>
-                        <span class="empty-hint">Adicione sua primeira transação acima</span>
                     </div>
                 </div>
-            </section>
-
-            <!-- Charts Grid -->
-            <div class="charts-grid">
-                <!-- Category Chart -->
-                <section class="chart-section">
-                    <h2 class="section-title">📊 Gastos por Categoria</h2>
-                    <div class="chart-container">
-                        <canvas id="category-chart"></canvas>
-                        <div class="chart-empty" id="chart-empty">
-                            <span class="empty-icon">📈</span>
-                            <p>Adicione despesas para ver o gráfico</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Monthly Evolution Chart -->
-                <section class="chart-section">
-                    <h2 class="section-title">📈 Evolução Mensal</h2>
-                    <div class="chart-container chart-container-wide">
-                        <canvas id="monthly-chart"></canvas>
-                        <div class="chart-empty" id="monthly-chart-empty">
-                            <span class="empty-icon">📉</span>
-                            <p>Adicione transações para ver a evolução</p>
-                        </div>
-                    </div>
-                </section>
             </div>
-            <!-- Top 5 Expenses -->
-            <section class="chart-section" style="margin-top: var(--spacing-xl);">
-                <h2 class="section-title">🏆 Top 5 Despesas</h2>
-                <div class="top-expenses-container" id="top-expenses-list">
-                    <!-- Top expenses will be inserted here -->
-                    <div class="empty-state">
-                        <p>Adicione despesas para ver o ranking</p>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Financing Section -->
-            <section class="financing-section" id="financing-section">
-                <div class="financing-header-section">
-                    <h2 class="section-title">💸 Meus Financiamentos</h2>
+            <!-- View: Financing -->
+            <div id="view-financing" class="view">
+                <div class="financing-header-section"
+                    style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                    <h2 class="section-title">Meus Financiamentos</h2>
                     <button class="btn btn-primary" id="add-financing-btn">
-                        <span class="btn-icon">🆕</span> Novo Financiamento
+                        <span class="btn-icon">🆕</span> Novo
                     </button>
                 </div>
-
-                <!-- Financing Summary -->
-                <div id="financing-summary">
-                    <!-- Summary cards here -->
-                </div>
-
-                <!-- Active Financings -->
-                <div class="financings-grid" id="financings-list">
-                    <!-- Cards inserted via JS -->
-                </div>
-            </section>
-        </div>
-
-        <!-- Edit Modal -->
-        <div class="modal-overlay" id="edit-modal" hidden>
-            <div class="modal">
-                <div class="modal-header">
-                    <h3>✏️ Editar Transação</h3>
-                    <button class="modal-close" id="modal-close">&times;</button>
-                </div>
-                <form id="edit-form" class="transaction-form">
-                    <input type="hidden" id="edit-id" name="id">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit-type">Tipo</label>
-                            <select id="edit-type" name="type" required>
-                                <option value="income">💵 Receita</option>
-                                <option value="expense">💸 Despesa</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-amount">Valor (R$)</label>
-                            <input type="number" id="edit-amount" name="amount" step="0.01" min="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-category">Categoria</label>
-                            <select id="edit-category" name="category" required>
-                                <option value="Salário">💼 Salário</option>
-                                <option value="Freelance">💻 Freelance</option>
-                                <option value="Investimentos">📊 Investimentos</option>
-                                <option value="Outros Receita">💰 Outros</option>
-                                <option value="Alimentação">🍔 Alimentação</option>
-                                <option value="Transporte">🚗 Transporte</option>
-                                <option value="Moradia">🏠 Moradia</option>
-                                <option value="Saúde">🏥 Saúde</option>
-                                <option value="Educação">📚 Educação</option>
-                                <option value="Lazer">🎮 Lazer</option>
-                                <option value="Compras">🛒 Compras</option>
-                                <option value="Contas">📄 Contas</option>
-                                <option value="Outros Despesa">📦 Outros</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-2">
-                            <label for="edit-description">Descrição</label>
-                            <input type="text" id="edit-description" name="description" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-account">Conta</label>
-                            <input type="text" id="edit-account" name="account">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-date">Data</label>
-                            <input type="date" id="edit-date" name="date" required>
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" id="modal-cancel">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">
-                            <span class="btn-icon">✓</span>
-                            Salvar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Add Financing Modal -->
-        <div class="modal-overlay" id="add-financing-modal" hidden>
-            <div class="modal">
-                <div class="modal-header">
-                    <h3>🏦 Novo Financiamento</h3>
-                    <button class="modal-close" id="add-financing-close">&times;</button>
-                </div>
-                <form id="add-financing-form" class="transaction-form">
-                    <div class="form-row">
-                        <div class="form-group flex-2">
-                            <label for="fin-name">Nome / Descrição</label>
-                            <input type="text" id="fin-name" name="name" placeholder="Ex: Casa Própria, Carro..."
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fin-type">Tipo</label>
-                            <select id="fin-type" name="type" required>
-                                <option value="house">🏠 Imóvel</option>
-                                <option value="vehicle">🚗 Veículo</option>
-                                <option value="other">📋 Outro</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fin-principal">Valor Financiado (R$)</label>
-                            <input type="number" id="fin-principal" name="principal" step="0.01" min="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fin-rate">Taxa Anual (%)</label>
-                            <input type="number" id="fin-rate" name="annualRate" step="0.01" min="0.01"
-                                placeholder="Ex: 9.5" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fin-term">Prazo (meses)</label>
-                            <input type="number" id="fin-term" name="termMonths" min="1" placeholder="Ex: 360" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fin-system">Sistema</label>
-                            <select id="fin-system" name="system" required>
-                                <option value="PRICE">PRICE (Parcelas fixas)</option>
-                                <option value="SAC">SAC (Amortização constante)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fin-start">Data Início</label>
-                            <input type="date" id="fin-start" name="startDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fin-cet">CET (%) <small>(Opcional)</small></label>
-                            <input type="number" id="fin-cet" name="cetRate" step="0.01">
-                        </div>
-                        <div class="form-group form-submit">
-                            <button type="submit" class="btn btn-primary">Cadastrar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Amortization Table Modal -->
-        <div class="modal-overlay" id="amortization-modal" hidden>
-            <div class="modal" style="max-width: 800px;">
-                <div class="modal-header">
-                    <h3 id="amortization-title">📊 Tabela de Amortização</h3>
-                    <button class="modal-close" id="amortization-close">&times;</button>
-                </div>
-                <div class="amortization-table-container">
-                    <table class="amortization-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Vencimento</th>
-                                <th>Amortização</th>
-                                <th>Juros</th>
-                                <th>Parcela</th>
-                                <th>Saldo Devedor</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="amortization-table-body">
-                            <!-- Rows injected via JS -->
-                        </tbody>
-                    </table>
+                <div id="financing-summary" style="margin-bottom: 2rem;"></div>
+                <div class="financings-grid" id="financings-list"
+                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
                 </div>
             </div>
-        </div>
 
-        <!-- Extra Amortization Modal -->
-        <div class="modal-overlay" id="extra-amortization-modal" hidden>
-            <div class="modal">
-                <div class="modal-header">
-                    <h3>💰 Amortização Extra</h3>
-                    <button class="modal-close" id="extra-amortization-close">&times;</button>
+            <!-- View: Categories -->
+            <div id="view-categories" class="view">
+                <div id="categories-view-content" style="padding: 2rem;">
+                    <h2>Gerenciar Categorias</h2>
+                    <p>Selecione uma categoria para editar ou crie uma nova.</p>
+                    <div id="categories-list-view" class="categories-list"></div>
                 </div>
+            </div>
+
+            <!-- View: Data (Import/Export) -->
+            <div id="view-data" class="view">
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <section class="chart-section" style="flex: 1; min-width: 300px;">
+                        <h3>📥 Importar</h3>
+                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <label class="btn btn-secondary" for="import-file">
+                                📑 Importar CSV
+                            </label>
+                            <label class="btn btn-secondary" for="restore-file">
+                                💾 Restaurar Backup (JSON)
+                            </label>
+                            <!-- Hidden inputs -->
+                            <input type="file" id="import-file" accept=".csv" hidden>
+                            <input type="file" id="restore-file" accept=".json" hidden>
+                        </div>
+                    </section>
+                    <section class="chart-section" style="flex: 1; min-width: 300px;">
+                        <h3>📤 Exportar</h3>
+                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <button class="btn btn-secondary" id="export-btn">
+                                📑 Exportar CSV
+                            </button>
+                            <button class="btn btn-secondary" id="backup-btn">
+                                💾 Backup Completo (JSON)
+                            </button>
+                            <button class="btn btn-secondary" id="report-btn">
+                                📄 Relatório PDF
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 4. Inspector Panel -->
+        <aside id="inspector" class="inspector">
+            <div class="inspector-header">
+                <h3>Detalhes</h3>
+                <button class="inspector-close" onclick="ui.closeInspector()">&times;</button>
+            </div>
+            <div id="inspector-content" class="inspector-content">
+                <p class="text-muted" style="text-align: center; margin-top: 2rem;">
+                    Selecione um item para ver detalhes
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Legacy Modals (To be refactored into Inspector later, keeping for compatibility during transition) -->
+    <!-- We will keep the Forms hidden but accessible if we need to grab their HTML for Inspector instanciation -->
+
+    <!-- Edit Modal Structure REPURPOSED for Inspector Templates? -->
+    <!-- Actually, let's keep the modal structure for now at the bottom of body to avoid breaking JS selectors immediately -->
+    <!-- We will hide them and use them as templates or eventually delete them. -->
+
+
+    <!-- Financing Modals (Restored) -->
+    <div id="add-financing-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Novo Financiamento</h3>
+                <button class="close-modal" id="add-financing-close">&times;</button>
+            </div>
+            <form id="add-financing-form">
+                <div class="form-group">
+                    <label for="name">Nome/Descrição</label>
+                    <input type="text" name="name" required placeholder="Ex: Financiamento Casa">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Tipo</label>
+                        <select name="type">
+                            <option value="house">🏠 Imóvel</option>
+                            <option value="vehicle">🚗 Veículo</option>
+                            <option value="other">📋 Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="system">Sistema</label>
+                        <select name="system">
+                            <option value="sac">SAC (Parcelas decrescentes)</option>
+                            <option value="price">Price (Parcelas fixas)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="principal">Valor Financiado</label>
+                        <input type="number" name="principal" required step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="annualRate">Taxa Anual (%)</label>
+                        <input type="number" name="annualRate" required step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="termMonths">Prazo (meses)</label>
+                        <input type="number" name="termMonths" required step="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Data Início</label>
+                        <input type="date" name="startDate" id="financing-start-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cetRate">CET Anual (%) <small>(Opcional)</small></label>
+                    <input type="number" name="cetRate" step="0.01" min="0">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Salvar Financiamento</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="amortization-modal" class="modal-overlay hidden">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 id="amortization-title">Tabela de Amortização</h3>
+                <button class="close-modal" id="amortization-close">&times;</button>
+            </div>
+            <div class="table-container" style="max-height: 60vh;">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vencimento</th>
+                            <th>Amortização</th>
+                            <th>Juros</th>
+                            <th>Prestação</th>
+                            <th>Saldo Devedor</th>
+                            <th>Status.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="amortization-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="extra-amortization-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Amortização Extra</h3>
+                <button class="close-modal" id="extra-amortization-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Financiamento: <strong id="extra-financing-name"></strong></p>
                 <form id="extra-amortization-form">
                     <div class="form-group">
-                        <label>Financiamento: <strong id="extra-financing-name">...</strong></label>
-                    </div>
-                    <div class="form-group">
-                        <label for="extra-amount">Valor da Amortização (R$)</label>
-                        <input type="number" id="extra-amount" step="0.01" min="0.01" placeholder="0,00" required>
+                        <label for="extra-amount">Valor a Amortizar (R$)</label>
+                        <input type="number" id="extra-amount" name="amount" required step="0.01" min="0">
                     </div>
                     <div class="form-group">
                         <label>Estratégia</label>
                         <div class="radio-group">
-                            <label class="radio-label">
+                            <label>
                                 <input type="radio" name="extra-strategy" value="reduce_term" checked>
-                                ⏳ Reduzir Prazo (Manter valor da parcela)
+                                Reduzir Prazo (Manter valor da parcela)
                             </label>
-                            <label class="radio-label">
+                            <label>
                                 <input type="radio" name="extra-strategy" value="reduce_payment">
-                                📉 Reduzir Parcela (Manter prazo original)
+                                Reduzir Parcela (Manter prazo original)
                             </label>
                         </div>
                     </div>
 
-                    <!-- Simulation Result -->
-                    <div id="simulation-result" class="simulation-result" hidden></div>
+                    <div id="simulation-result" class="simulation-result hidden"></div>
 
-                    <div class="form-submit" style="margin-top: 1rem;">
-                        <button type="submit" class="btn btn-primary">Confirmar Amortização</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-block">Confirmar Amortização</button>
                     </div>
                 </form>
             </div>
