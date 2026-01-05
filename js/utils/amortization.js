@@ -108,9 +108,10 @@ export function calculateSAC(principal, annualRate, termMonths, startDate) {
  * @returns {Array} Installments array
  */
 export function generateAmortizationTable(system, principal, annualRate, termMonths, startDate) {
-    if (system === 'PRICE') {
+    const systemUpper = system.toUpperCase();
+    if (systemUpper === 'PRICE') {
         return calculatePRICE(principal, annualRate, termMonths, startDate);
-    } else if (system === 'SAC') {
+    } else if (systemUpper === 'SAC') {
         return calculateSAC(principal, annualRate, termMonths, startDate);
     }
     throw new Error(`Sistema de amortização desconhecido: ${system}`);
@@ -189,6 +190,7 @@ export function getNextInstallments(installments, count = 3) {
  */
 export function simulateExtraAmortization(currentFinancing, extraAmount, strategy) {
     const { principal, annualRate, system, installments } = currentFinancing;
+    const systemUpper = system.toUpperCase();
     /* 
     Calculate remaining balance from pending installments.
     Actually, we should look at the balance of the last PAID installment, 
@@ -239,7 +241,7 @@ export function simulateExtraAmortization(currentFinancing, extraAmount, strateg
 
     if (strategy === 'reduce_payment') {
         // Keep term, reduce payment
-        if (system === 'PRICE') {
+        if (systemUpper === 'PRICE') {
             newInstallments = calculatePRICE(newBalance, annualRate, oldTerm, startDate);
         } else {
             newInstallments = calculateSAC(newBalance, annualRate, oldTerm, startDate);
@@ -265,7 +267,7 @@ export function simulateExtraAmortization(currentFinancing, extraAmount, strateg
         // SAC Reduce Term: We want to match the previous initial payment?
 
         // Let's implement PRICE reduce term clearly first.
-        if (system === 'PRICE') {
+        if (systemUpper === 'PRICE') {
             // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
             // We know PMT, P (newBalance), r. Find n.
             // Formula: n = - ln(1 - (P*r/PMT)) / ln(1+r)

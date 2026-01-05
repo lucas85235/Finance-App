@@ -273,7 +273,7 @@ export class FinancingUI {
             if (dateInput) {
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
-            this.addFinancingModal.hidden = false;
+            this.addFinancingModal.classList.remove('hidden');
         }
     }
 
@@ -282,7 +282,7 @@ export class FinancingUI {
      */
     hideAddModal() {
         if (this.addFinancingModal) {
-            this.addFinancingModal.hidden = true;
+            this.addFinancingModal.classList.add('hidden');
             this.addFinancingForm?.reset();
         }
     }
@@ -367,7 +367,7 @@ export class FinancingUI {
         }
 
         if (this.amortizationModal) {
-            this.amortizationModal.hidden = false;
+            this.amortizationModal.classList.remove('hidden');
         }
     }
 
@@ -376,7 +376,7 @@ export class FinancingUI {
      */
     hideAmortizationModal() {
         if (this.amortizationModal) {
-            this.amortizationModal.hidden = true;
+            this.amortizationModal.classList.add('hidden');
             this.currentFinancingId = null;
         }
     }
@@ -467,13 +467,13 @@ export class FinancingUI {
         }
 
         if (this.extraAmortizationModal) {
-            this.extraAmortizationModal.hidden = false;
+            this.extraAmortizationModal.classList.remove('hidden');
         }
     }
 
     hideExtraModal() {
         if (this.extraAmortizationModal) {
-            this.extraAmortizationModal.hidden = true;
+            this.extraAmortizationModal.classList.add('hidden');
             this.currentFinancingId = null;
         }
     }

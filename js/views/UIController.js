@@ -231,7 +231,9 @@ export class UIController {
 
     setDefaultDate() {
         const dateInput = document.getElementById('date');
-        dateInput.value = new Date().toISOString().split('T')[0];
+        if (dateInput) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
     }
 
     handleFormSubmit(e) {
