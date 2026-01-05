@@ -52,7 +52,7 @@ export class FinancingManager {
      * @returns {Object} Created financing
      */
     addFinancing(data) {
-        const { name, type, principal, annualRate, termMonths, system, cetRate, startDate } = data;
+        const { name, type, principal, annualRate, termMonths, system, cetRate, startDate, paidInstallments = 0, anticipatedInstallments = 0 } = data;
 
         // Generate amortization table
         const installments = generateAmortizationTable(
@@ -62,6 +62,13 @@ export class FinancingManager {
             termMonths,
             startDate
         );
+
+        // Mark already paid installments
+        const totalPaid = paidInstallments + anticipatedInstallments;
+        for (let i = 0; i < Math.min(totalPaid, installments.length); i++) {
+            installments[i].status = 'paid';
+            installments[i].paidDate = installments[i].dueDate;
+        }
 
         const financing = {
             id: this.generateId(),
@@ -74,6 +81,8 @@ export class FinancingManager {
             system,
             cetRate: cetRate || null,
             startDate,
+            paidInstallments: paidInstallments,
+            anticipatedInstallments: anticipatedInstallments,
             installments,
             createdAt: new Date().toISOString()
         };

@@ -55,6 +55,11 @@ export class FinancingUI {
         this.scenarioClose = this.scenarioModal?.querySelector('.close-modal');
         this.btnSimulateScenarios = document.getElementById('btn-simulate-scenarios');
         this.scenarioAmountInput = document.getElementById('scenario-amount');
+
+        // Edit Financing Modal
+        this.editFinancingModal = document.getElementById('edit-financing-modal');
+        this.editFinancingForm = document.getElementById('edit-financing-form');
+        this.editFinancingClose = document.getElementById('edit-financing-close');
     }
 
     /**
@@ -101,6 +106,7 @@ export class FinancingUI {
             if (e.target === this.amortizationModal) this.hideAmortizationModal();
             if (e.target === this.extraAmortizationModal) this.hideExtraModal();
             if (e.target === this.scenarioModal) this.hideScenarioModal();
+            if (e.target === this.editFinancingModal) this.hideEditModal();
         });
 
         // Scenario listeners
@@ -114,6 +120,14 @@ export class FinancingUI {
             this.scenarioAmountInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') this.handleSimulateScenarios();
             });
+        }
+
+        // Edit Financing listeners
+        if (this.editFinancingClose) {
+            this.editFinancingClose.addEventListener('click', () => this.hideEditModal());
+        }
+        if (this.editFinancingForm) {
+            this.editFinancingForm.addEventListener('submit', (e) => this.handleEditFinancing(e));
         }
     }
 
@@ -224,6 +238,9 @@ export class FinancingUI {
                             <button class="btn btn-secondary btn-sm" onclick="financingUI.showScenarioModal('${f.id}')" title="Simular Cenários">
                                 ⚖️ Comparar
                             </button>
+                            <button class="btn btn-secondary btn-sm" onclick="financingUI.showEditModal('${f.id}')" title="Editar">
+                                ✏️
+                            </button>
                             <button class="btn btn-danger btn-sm" onclick="financingUI.deleteFinancing('${f.id}')" title="Excluir">
                                 🗑️
                             </button>
@@ -288,6 +305,69 @@ export class FinancingUI {
     }
 
     /**
+     * Show edit financing modal
+     */
+    showEditModal(financingId) {
+        const financing = this.fm.getFinancing(financingId);
+        if (!financing) return;
+
+        this.currentFinancingId = financingId;
+
+        // Fill form fields
+        document.getElementById('edit-financing-id').value = financing.id;
+        document.getElementById('edit-financing-name').value = financing.name;
+        document.getElementById('edit-financing-type').value = financing.type;
+        document.getElementById('edit-financing-system').value = financing.system.toUpperCase();
+        document.getElementById('edit-financing-principal').value = `R$ ${financing.principal.toLocaleString('pt-BR')}`;
+        document.getElementById('edit-financing-rate').value = `${financing.annualRate}%`;
+        document.getElementById('edit-financing-term').value = `${financing.termMonths} meses`;
+        document.getElementById('edit-financing-start').value = financing.startDate;
+
+        if (this.editFinancingModal) {
+            this.editFinancingModal.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Hide edit financing modal
+     */
+    hideEditModal() {
+        if (this.editFinancingModal) {
+            this.editFinancingModal.classList.add('hidden');
+            this.currentFinancingId = null;
+        }
+    }
+
+    /**
+     * Handle edit financing form submit
+     */
+    handleEditFinancing(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this.editFinancingForm);
+        const id = formData.get('id');
+        const updates = {
+            name: formData.get('name'),
+            type: formData.get('type')
+        };
+
+        if (!updates.name) {
+            showToast('Nome é obrigatório', 'error');
+            return;
+        }
+
+        try {
+            if (this.fm.updateFinancing(id, updates)) {
+                this.hideEditModal();
+                this.render();
+                showToast('Financiamento atualizado!', 'success');
+            }
+        } catch (error) {
+            showToast('Erro ao atualizar: ' + error.message, 'error');
+        }
+    }
+
+    /**
      * Handle add financing form submit
      */
     handleAddFinancing(e) {
@@ -302,7 +382,9 @@ export class FinancingUI {
             termMonths: parseInt(formData.get('termMonths')),
             system: formData.get('system'),
             cetRate: formData.get('cetRate') ? parseFloat(formData.get('cetRate')) : null,
-            startDate: formData.get('startDate')
+            startDate: formData.get('startDate'),
+            paidInstallments: parseInt(formData.get('paidInstallments')) || 0,
+            anticipatedInstallments: parseInt(formData.get('anticipatedInstallments')) || 0
         };
 
         // Validation
