@@ -1,0 +1,390 @@
+/* Financing Section Styles */
+
+.financing-section {
+    margin-top: var(--spacing-xl);
+    animation: fadeIn 0.5s ease;
+}
+
+.financing-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Financing Summary Cards - Mini Dashboard */
+.financing-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Specific styling overrides for financing summary */
+.financing-summary-cards .summary-card {
+    padding: var(--spacing-md);
+    min-height: auto;
+}
+
+.financing-summary-cards .card-icon {
+    font-size: 1.5rem;
+}
+
+.financing-summary-cards .card-value {
+    font-size: 1.25rem;
+}
+
+/* Upcoming Installments List */
+.upcoming-installments {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.upcoming-installments h4 {
+    margin-bottom: var(--spacing-md);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.upcoming-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border-color);
+}
+
+.upcoming-item.pending {
+    border-left-color: #fbbf24;
+}
+
+.upcoming-item.overdue {
+    border-left-color: var(--expense-color);
+}
+
+.upcoming-item.paid {
+    border-left-color: var(--income-color);
+}
+
+.upcoming-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.upcoming-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.upcoming-number {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.upcoming-details {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.upcoming-amount {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.upcoming-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Financing Cards List */
+.financings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.financing-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.financing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-primary);
+}
+
+.financing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.financing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+}
+
+.financing-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.financing-title h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.financing-icon {
+    font-size: 1.5rem;
+    background: var(--bg-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.financing-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.financing-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    font-size: 0.9rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row span {
+    color: var(--text-secondary);
+}
+
+/* Progress Bar */
+.financing-progress {
+    margin-bottom: var(--spacing-md);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--income-color), var(--accent-secondary));
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Status Badges */
+.financing-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.status-badge.paid {
+    color: var(--income-color);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.status-badge.pending {
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.2);
+}
+
+.status-badge.overdue {
+    color: var(--expense-color);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Amortization Table Styles */
+.amortization-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    margin-top: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+.amortization-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.amortization-table th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    z-index: 10;
+}
+
+.amortization-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.amortization-table tr:hover {
+    background: var(--bg-glass);
+}
+
+.amortization-table tr.paid td {
+    opacity: 0.6;
+}
+
+.amortization-table tr.overdue td {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.status-icon {
+    margin-right: var(--spacing-xs);
+}
+
+@media (max-width: 768px) {
+    .financings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .financing-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .financing-header-section button {
+        width: 100%;
+    }
+}
+
+/* CSS for Financing Module - Continued */
+
+/* Radio Group in Modals */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.radio-label input[type="radio"] {
+    accent-color: var(--accent-primary);
+    width: 16px;
+    height: 16px;
+}
+
+/* Simulation Result Box */
+.simulation-box {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    animation: fadeIn 0.3s ease;
+}
+
+.simulation-box h5 {
+    color: var(--income-color);
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sim-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.sim-row strong {
+    color: var(--text-primary);
+}
+
+.sim-row.highlight {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sim-row.highlight strong {
+    color: var(--income-color);
+    font-size: 1rem;
+}

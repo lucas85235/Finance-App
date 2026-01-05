@@ -7,6 +7,7 @@
     <meta name="description" content="Dashboard de organização financeira pessoal">
     <title>💰 Finance Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/financing.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- jsPDF & AutoTable -->
@@ -216,6 +217,26 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Financing Section -->
+            <section class="financing-section" id="financing-section">
+                <div class="financing-header-section">
+                    <h2 class="section-title">💸 Meus Financiamentos</h2>
+                    <button class="btn btn-primary" id="add-financing-btn">
+                        <span class="btn-icon">🆕</span> Novo Financiamento
+                    </button>
+                </div>
+
+                <!-- Financing Summary -->
+                <div id="financing-summary">
+                    <!-- Summary cards here -->
+                </div>
+
+                <!-- Active Financings -->
+                <div class="financings-grid" id="financings-list">
+                    <!-- Cards inserted via JS -->
+                </div>
+            </section>
         </div>
 
         <!-- Edit Modal -->
@@ -280,6 +301,163 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Add Financing Modal -->
+        <div class="modal-overlay" id="add-financing-modal" hidden>
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>🏦 Novo Financiamento</h3>
+                    <button class="modal-close" id="add-financing-close">&times;</button>
+                </div>
+                <form id="add-financing-form" class="transaction-form">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="fin-name">Nome / Descrição</label>
+                            <input type="text" id="fin-name" name="name" placeholder="Ex: Casa Própria, Carro..."
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fin-type">Tipo</label>
+                            <select id="fin-type" name="type" required>
+                                <option value="house">🏠 Imóvel</option>
+                                <option value="vehicle">🚗 Veículo</option>
+                                <option value="other">📋 Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fin-principal">Valor Financiado (R$)</label>
+                            <input type="number" id="fin-principal" name="principal" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fin-rate">Taxa Anual (%)</label>
+                            <input type="number" id="fin-rate" name="annualRate" step="0.01" min="0.01"
+                                placeholder="Ex: 9.5" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fin-term">Prazo (meses)</label>
+                            <input type="number" id="fin-term" name="termMonths" min="1" placeholder="Ex: 360" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fin-system">Sistema</label>
+                            <select id="fin-system" name="system" required>
+                                <option value="PRICE">PRICE (Parcelas fixas)</option>
+                                <option value="SAC">SAC (Amortização constante)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fin-start">Data Início</label>
+                            <input type="date" id="fin-start" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fin-cet">CET (%) <small>(Opcional)</small></label>
+                            <input type="number" id="fin-cet" name="cetRate" step="0.01">
+                        </div>
+                        <div class="form-group form-submit">
+                            <button type="submit" class="btn btn-primary">Cadastrar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Amortization Table Modal -->
+        <div class="modal-overlay" id="amortization-modal" hidden>
+            <div class="modal" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3 id="amortization-title">📊 Tabela de Amortização</h3>
+                    <button class="modal-close" id="amortization-close">&times;</button>
+                </div>
+                <div class="amortization-table-container">
+                    <table class="amortization-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Vencimento</th>
+                                <th>Amortização</th>
+                                <th>Juros</th>
+                                <th>Parcela</th>
+                                <th>Saldo Devedor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amortization-table-body">
+                            <!-- Rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extra Amortization Modal -->
+        <div class="modal-overlay" id="extra-amortization-modal" hidden>
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>💰 Amortização Extra</h3>
+                    <button class="modal-close" id="extra-amortization-close">&times;</button>
+                </div>
+                <form id="extra-amortization-form">
+                    <div class="form-group">
+                        <label>Financiamento: <strong id="extra-financing-name">...</strong></label>
+                    </div>
+                    <div class="form-group">
+                        <label for="extra-amount">Valor da Amortização (R$)</label>
+                        <input type="number" id="extra-amount" step="0.01" min="0.01" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estratégia</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="extra-strategy" value="reduce_term" checked>
+                                ⏳ Reduzir Prazo (Manter valor da parcela)
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="extra-strategy" value="reduce_payment">
+                                📉 Reduzir Parcela (Manter prazo original)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Result -->
+                    <div id="simulation-result" class="simulation-result" hidden></div>
+
+                    <div class="form-submit" style="margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">Confirmar Amortização</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Comparação de Cenários -->
+    <div id="scenario-modal" class="modal-overlay hidden">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>Simular Cenários</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-bar">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="scenario-amount">Valor Extra (R$)</label>
+                        <input type="number" id="scenario-amount" step="0.01" min="0.01" placeholder="Ex: 5000,00">
+                    </div>
+                    <button id="btn-simulate-scenarios" class="btn btn-primary"
+                        style="align-self: flex-end; margin-bottom: 1rem;">
+                        Simular
+                    </button>
+                </div>
+
+                <div id="scenario-results" class="scenario-grid hidden">
+                    <!-- Cards for comparison will be injected here -->
+                </div>
             </div>
         </div>
     </div>

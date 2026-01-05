@@ -124,15 +124,17 @@ body {
 .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 500;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-normal);
+    height: auto;
 }
 
 .btn-icon {
@@ -340,6 +342,7 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: var(--spacing-xl);
+    align-items: start;
 }
 
 @media (max-width: 1024px) {
@@ -355,6 +358,7 @@ body {
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     padding: var(--spacing-xl);
+    min-height: 600px;
 }
 
 .section-header {
@@ -362,11 +366,15 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
 }
 
 .filter-group {
     display: flex;
     gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .filter-select {
@@ -404,8 +412,7 @@ body {
 
 .table-container {
     overflow-x: auto;
-    height: 400px;
-    /* Fixed height to always use full available space */
+    height: 800px;
     overflow-y: auto;
 }
 
@@ -414,15 +421,14 @@ body {
     padding: var(--spacing-md);
     text-align: left;
     border-bottom: 1px solid var(--border-color);
-    /* Ensure columns take space */
-    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .transactions-table {
     width: 100%;
-    min-width: 600px;
-    /* Ensure it doesn't shrink too much */
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .transactions-table th {
@@ -434,11 +440,56 @@ body {
     position: sticky;
     top: 0;
     background: #1e1e2e;
-    /* Fallback */
     background: rgba(30, 30, 46, 0.95);
     backdrop-filter: blur(10px);
     z-index: 5;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Column widths */
+.transactions-table th:nth-child(1),
+.transactions-table td:nth-child(1) {
+    width: 100px;
+}
+
+/* Data */
+.transactions-table th:nth-child(2),
+.transactions-table td:nth-child(2) {
+    width: auto;
+}
+
+/* Descrição - flexivel */
+.transactions-table th:nth-child(3),
+.transactions-table td:nth-child(3) {
+    width: 120px;
+}
+
+/* Categoria */
+.transactions-table th:nth-child(4),
+.transactions-table td:nth-child(4) {
+    width: 100px;
+}
+
+/* Conta */
+.transactions-table th:nth-child(5),
+.transactions-table td:nth-child(5) {
+    width: 120px;
+    text-align: right;
+}
+
+/* Valor */
+.transactions-table th:nth-child(6),
+.transactions-table td:nth-child(6) {
+    width: 80px;
+    text-align: center;
+}
+
+/* Ação */
+
+.transactions-table td:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .transactions-table tbody tr {
