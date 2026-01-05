@@ -93,6 +93,7 @@ export class UIController {
         this.btnNewTransaction = document.getElementById('btn-new-transaction');
         this.sidebarToggle = document.getElementById('sidebar-toggle');
         this.sidebar = document.getElementById('sidebar');
+        this.inspectorCloseBtn = document.querySelector('.inspector-close');
     }
 
     initEventListeners() {
@@ -109,6 +110,10 @@ export class UIController {
         if (this.form) this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         this.addCategoryForm.addEventListener('submit', (e) => this.handleCategorySubmit(e));
         this.categoriesClose.addEventListener('click', () => this.hideCategoriesModal());
+
+        if (this.inspectorCloseBtn) {
+            this.inspectorCloseBtn.addEventListener('click', () => this.closeInspector());
+        }
 
         window.addEventListener('click', (e) => {
             // if (e.target === this.editModal) this.hideEditModal(); // removed
