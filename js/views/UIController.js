@@ -88,6 +88,11 @@ export class UIController {
         // Inspector
         this.appShell = document.getElementById('app-shell');
         this.inspectorContent = document.getElementById('inspector-content');
+
+        // New Elements
+        this.btnNewTransaction = document.getElementById('btn-new-transaction');
+        this.sidebarToggle = document.getElementById('sidebar-toggle');
+        this.sidebar = document.getElementById('sidebar');
     }
 
     initEventListeners() {
@@ -156,6 +161,28 @@ export class UIController {
         }
 
         this.initKeyboardShortcuts();
+
+        // New Listeners
+        if (this.btnNewTransaction) {
+            this.btnNewTransaction.addEventListener('click', () => {
+                this.openInspector('new-transaction');
+            });
+        }
+
+        if (this.sidebarToggle) {
+            this.sidebarToggle.addEventListener('click', () => {
+                this.sidebar.classList.toggle('active');
+            });
+        }
+
+        // Close sidebar when clicking a nav item on mobile
+        this.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    this.sidebar.classList.remove('active');
+                }
+            });
+        });
     }
 
     initKeyboardShortcuts() {
@@ -235,6 +262,9 @@ export class UIController {
             case 'edit-transaction':
                 this.renderEditTransactionInspector(data);
                 break;
+            case 'new-transaction':
+                this.renderNewTransactionInspector();
+                break;
             default:
                 this.inspectorContent.innerHTML = '<p class="text-muted">Selecione um item</p>';
         }
@@ -313,6 +343,87 @@ export class UIController {
 
         // Attach listener
         document.getElementById('inspector-edit-form').addEventListener('submit', (e) => this.handleEditSubmit(e));
+    }
+
+    renderNewTransactionInspector() {
+        this.inspectorContent.innerHTML = `
+            <div class="inspector-form-container">
+                <h3>Nova Transação</h3>
+                <form id="inspector-new-form" class="inspector-form">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="type" id="inspector-new-type" class="form-control">
+                           <option value="expense" selected>Despesa</option>
+                           <option value="income">Receita</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" name="description" class="form-control" placeholder="Ex: Mercado" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" min="0.01" placeholder="0,00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select name="category" id="inspector-new-category" class="form-control">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Conta / Origem</label>
+                        <input type="text" name="account" class="form-control" placeholder="Ex: NuBank">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" name="date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
+                    </div>
+
+                    <div class="form-actions-inspector">
+                         <button type="submit" class="btn btn-primary btn-block">Adicionar</button>
+                         <button type="button" class="btn btn-secondary btn-block" onclick="ui.closeInspector()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        this.populateCategorySelects();
+
+        // Target specific category select for new transaction if needed, but populateCategorySelects handles IDs 'category', 'edit-category', 'inspector-edit-category'.
+        // We added 'inspector-new-category' in HTML, but need to update populateCategorySelects or manually populate here.
+        // Let's update populateCategorySelects to include 'inspector-new-category'
+
+        document.getElementById('inspector-new-form').addEventListener('submit', (e) => this.handleNewTransactionSubmit(e));
+    }
+
+    handleNewTransactionSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const transaction = {
+            type: formData.get('type'),
+            amount: parseFloat(formData.get('amount')),
+            description: formData.get('description'),
+            category: formData.get('category'),
+            account: formData.get('account') || '',
+            date: formData.get('date')
+        };
+
+        if (transaction.amount <= 0) {
+            showToast('Valor deve ser maior que zero', 'error');
+            return;
+        }
+
+        this.fm.addTransaction(transaction);
+        showToast('Transação adicionada!', 'success');
+        this.closeInspector();
+        this.render();
     }
 
     handleDelete(id) {
@@ -725,7 +836,7 @@ export class UIController {
     }
 
     populateCategorySelects() {
-        const selectIds = ['category', 'edit-category', 'inspector-edit-category'];
+        const selectIds = ['category', 'edit-category', 'inspector-edit-category', 'inspector-new-category'];
 
         selectIds.forEach(id => {
             const select = document.getElementById(id);

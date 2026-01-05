@@ -207,20 +207,66 @@
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     #app-shell {
-        grid-template-columns: 0px 1fr 0px;
-        /* Hide Sidebar on mobile by default */
+        grid-template-columns: 1fr;
+        /* Sidebar hidden by default */
         grid-template-areas:
-            "topbar topbar topbar"
-            "main main main";
+            "topbar"
+            "main";
+        /* Remove Inspector column from grid definition for mobile to simplify */
     }
 
-    /* We'll need a way to toggle sidebar on mobile, maybe overlay */
-    #sidebar.mobile-open {
+    /* Override grid for inspector open on mobile */
+    #app-shell.inspector-open {
+        grid-template-columns: 1fr;
+        /* Still 1 col */
+        /* We will position inspector absolute/fixed on mobile */
+    }
+
+    #sidebar {
+        display: none;
         position: fixed;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 250px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        width: 280px;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #sidebar.active {
+        display: flex;
+    }
+
+    .mobile-only {
+        display: block !important;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-primary);
+        margin-right: 1rem;
+    }
+
+    /* Inspector full screen on mobile */
+    #inspector {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2000;
+        /* Above sidebar */
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    #app-shell.inspector-open #inspector {
+        transform: translateX(0);
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none;
     }
 }
