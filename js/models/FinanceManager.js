@@ -169,9 +169,48 @@ export class FinanceManager {
         return transactions;
     }
 
-    // Calculate totals
+    /**
+     * Get unified list of transactions and upcoming installments
+     * @returns {Array} Combined and sorted list
+     */
+    getUnifiedTransactions() {
+        const transactions = this.getFilteredTransactions();
+
+        let installments = [];
+        if (typeof financingUI !== 'undefined' && financingUI?.fm) {
+            const upcoming = financingUI.fm.getUpcomingInstallments(20);
+            installments = upcoming.map(inst => ({
+                id: `installment_${inst.financingId}_${inst.number}`,
+                date: inst.dueDate,
+                description: `${inst.financingName} - Parcela ${inst.number}`,
+                category: 'Financiamento',
+                account: 'Financiamento',
+                amount: inst.payment,
+                type: 'expense',
+                isInstallment: true,
+                installmentData: {
+                    financingId: inst.financingId,
+                    number: inst.number,
+                    status: inst.status,
+                    dueDate: inst.dueDate,
+                    principal: inst.principal,
+                    interest: inst.interest,
+                    balance: inst.balance
+                }
+            }));
+
+            if (this.currentPeriod !== 'all') {
+                installments = installments.filter(t => t.date.startsWith(this.currentPeriod));
+            }
+        }
+
+        return [...transactions, ...installments].sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    // Calculate totals (respects period filter)
     getTotals() {
-        return this.transactions.reduce((acc, t) => {
+        const transactions = this.getFilteredTransactions();
+        return transactions.reduce((acc, t) => {
             if (t.type === 'income') {
                 acc.income += t.amount;
             } else {
@@ -182,10 +221,10 @@ export class FinanceManager {
         }, { income: 0, expense: 0, balance: 0 });
     }
 
-    // Get expenses by category (for chart)
+    // Get expenses by category (for chart, respects period filter)
     getExpensesByCategory() {
         const categories = {};
-        this.transactions
+        this.getFilteredTransactions()
             .filter(t => t.type === 'expense')
             .forEach(t => {
                 categories[t.category] = (categories[t.category] || 0) + t.amount;

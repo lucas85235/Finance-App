@@ -869,73 +869,227 @@ body {
     background: var(--expense-color);
     border-radius: 3px;
     box-shadow: 0 0 8px var(--expense-glow);
+}
 
-    /* ===== Categories Modal ===== */
-    .categories-container {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-lg);
+/* ===== Categories Modal ===== */
+.categories-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.add-category-form {
+    background: var(--bg-card);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.categories-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: var(--spacing-xs);
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.category-icon {
+    font-size: 1.2rem;
+}
+
+.category-name {
+    font-weight: 500;
+}
+
+.btn-icon-only {
+    background: transparent;
+    color: var(--text-muted);
+    padding: var(--spacing-xs);
+    font-size: 1rem;
+}
+
+.btn-icon-only:hover {
+    color: var(--expense-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* ===== Inspector Form Styles ===== */
+.inspector-form-container {
+    padding: var(--spacing-md);
+}
+
+.inspector-form-container h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.inspector-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.inspector-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.inspector-form .form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.inspector-form .form-control {
+    padding: var(--spacing-md);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.inspector-form .form-control:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.form-actions-inspector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.form-actions-inspector .btn-block {
+    width: 100%;
+}
+
+/* ===== Validation Error Styles ===== */
+.input-error {
+    border-color: var(--expense-color) !important;
+    box-shadow: 0 0 0 3px var(--expense-glow) !important;
+}
+
+.field-error {
+    display: block;
+    color: var(--expense-color);
+    font-size: 0.8rem;
+    margin-top: var(--spacing-xs);
+    animation: fadeIn 0.2s ease;
+}
+
+/* ===== Privacy Mode ===== */
+body.privacy-mode .card-value,
+body.privacy-mode .amount,
+body.privacy-mode .expense-amount,
+body.privacy-mode #sidebar-income,
+body.privacy-mode #sidebar-expense,
+body.privacy-mode #sidebar-balance {
+    filter: blur(8px);
+    transition: filter var(--transition-fast);
+}
+
+body.privacy-mode .card-value:hover,
+body.privacy-mode .amount:hover,
+body.privacy-mode .expense-amount:hover {
+    filter: blur(0);
+}
+
+/* ===== Reports View ===== */
+.reports-container .stat-card {
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.reports-container .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* ===== Installment Styling ===== */
+.badge-installment {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+tr[data-installment="true"] {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+tr[data-installment="true"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+tr.overdue-installment {
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid var(--expense-color);
+}
+
+.btn-success {
+    background: var(--income-color);
+    color: white;
+    border: none;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-info {
+    background: #3b82f6;
+    color: white;
+    border: none;
+}
+
+.btn-info:hover {
+    background: #2563eb;
+}
+
+/* ===== Mobile Responsive Fixes ===== */
+@media (max-width: 900px) {
+    .transactions-layout {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
     }
 
-    .add-category-form {
-        background: var(--bg-card);
-        padding: var(--spacing-md);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
+    .transactions-sidebar {
+        display: none;
     }
-
-    /* Use existing .form-row and .form-group styles */
-
-    .categories-list-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .categories-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-sm);
-        max-height: 300px;
-        overflow-y: auto;
-        padding-right: var(--spacing-xs);
-    }
-
-    .category-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: var(--spacing-sm);
-        background: var(--bg-secondary);
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border-color);
-    }
-
-    .category-info {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .category-icon {
-        font-size: 1.2rem;
-    }
-
-    .category-name {
-        font-weight: 500;
-    }
-
-    .btn-icon-only {
-        background: transparent;
-        color: var(--text-muted);
-        padding: var(--spacing-xs);
-        font-size: 1rem;
-    }
-
-    .btn-icon-only:hover {
-        color: var(--expense-color);
-        background: rgba(239, 68, 68, 0.1);
-    }
+}

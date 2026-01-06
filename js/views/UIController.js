@@ -7,6 +7,7 @@ import { showToast } from '../utils/toast.js';
 import { formatCurrency, formatDate, escapeHtml, generateColors } from '../utils/helpers.js';
 import { CSVHandler } from '../utils/csv-handler.js';
 import { generatePDF } from '../utils/pdf-generator.js';
+import { validateTransaction, showFormErrors, clearFormErrors } from '../utils/validators.js';
 
 export class UIController {
     constructor(financeManager) {
@@ -127,7 +128,7 @@ export class UIController {
 
         this.periodSelect.addEventListener('change', (e) => {
             this.fm.currentPeriod = e.target.value;
-            this.renderTransactions();
+            this.render(); // Refresh all dashboard components
         });
 
         let searchTimeout;
@@ -163,6 +164,11 @@ export class UIController {
         const reportBtn = document.getElementById('report-btn');
         if (reportBtn) {
             reportBtn.addEventListener('click', () => generatePDF(this.fm));
+        }
+
+        const resetDataBtn = document.getElementById('reset-all-data-btn');
+        if (resetDataBtn) {
+            resetDataBtn.addEventListener('click', () => this.handleResetAllData());
         }
 
         this.initKeyboardShortcuts();
@@ -411,23 +417,29 @@ export class UIController {
 
     handleNewTransactionSubmit(e) {
         e.preventDefault();
-        const formData = new FormData(e.target);
+        const form = e.target;
+        const formData = new FormData(form);
 
-        const transaction = {
+        const rawTransaction = {
             type: formData.get('type'),
-            amount: parseFloat(formData.get('amount')),
+            amount: formData.get('amount'),
             description: formData.get('description'),
             category: formData.get('category'),
             account: formData.get('account') || '',
             date: formData.get('date')
         };
 
-        if (transaction.amount <= 0) {
-            showToast('Valor deve ser maior que zero', 'error');
+        const validation = validateTransaction(rawTransaction);
+
+        if (!validation.valid) {
+            showFormErrors(validation.errors, form);
+            const firstError = Object.values(validation.errors)[0];
+            showToast(firstError, 'error');
             return;
         }
 
-        this.fm.addTransaction(transaction);
+        clearFormErrors(form);
+        this.fm.addTransaction(validation.data);
         showToast('Transação adicionada!', 'success');
         this.closeInspector();
         this.render();
@@ -451,25 +463,30 @@ export class UIController {
 
     handleEditSubmit(e) {
         e.preventDefault();
-
-        const formData = new FormData(e.target);
+        const form = e.target;
+        const formData = new FormData(form);
         const id = formData.get('id');
-        const updates = {
+
+        const rawUpdates = {
             type: formData.get('type'),
-            amount: parseFloat(formData.get('amount')),
+            amount: formData.get('amount'),
             description: formData.get('description'),
             category: formData.get('category'),
             account: formData.get('account') || '',
             date: formData.get('date')
         };
 
-        if (updates.amount <= 0) {
-            showToast('Valor deve ser maior que zero', 'error');
+        const validation = validateTransaction(rawUpdates);
+
+        if (!validation.valid) {
+            showFormErrors(validation.errors, form);
+            const firstError = Object.values(validation.errors)[0];
+            showToast(firstError, 'error');
             return;
         }
 
-        if (this.fm.updateTransaction(id, updates)) {
-            // this.hideEditModal(); // Use closeInspector
+        clearFormErrors(form);
+        if (this.fm.updateTransaction(id, validation.data)) {
             this.closeInspector();
             this.render();
             showToast('Transação atualizada!', 'success');
@@ -550,6 +567,50 @@ export class UIController {
         reader.readAsText(file);
     }
 
+    /**
+     * Reset all application data with user confirmation
+     */
+    handleResetAllData() {
+        const confirmed = confirm(
+            '⚠️ ATENÇÃO: Esta ação irá apagar TODOS os dados!\n\n' +
+            '• Todas as transações\n' +
+            '• Todos os financiamentos\n' +
+            '• Todas as categorias personalizadas\n\n' +
+            'Esta ação NÃO pode ser desfeita. Deseja continuar?'
+        );
+
+        if (!confirmed) return;
+
+        // Second confirmation for safety
+        const doubleConfirm = confirm(
+            'Tem certeza ABSOLUTA?\n\n' +
+            'Digite OK para confirmar a exclusão de todos os dados.'
+        );
+
+        if (!doubleConfirm) return;
+
+        try {
+            // Clear all localStorage keys
+            localStorage.removeItem('finance_dashboard_data');
+            localStorage.removeItem('finance_dashboard_categories');
+            localStorage.removeItem('finance_dashboard_financings');
+
+            // Reset in-memory data
+            this.fm.transactions = [];
+            this.fm.categories = [];
+            this.fm.currentFilter = 'all';
+            this.fm.currentPeriod = 'all';
+            this.fm.searchQuery = '';
+
+            // Re-render UI
+            this.render();
+
+            showToast('Todos os dados foram apagados!', 'success');
+        } catch (error) {
+            showToast('Erro ao apagar dados: ' + error.message, 'error');
+        }
+    }
+
     populatePeriodFilter() {
         const periods = new Set();
         const monthNames = [
@@ -587,9 +648,17 @@ export class UIController {
         this.populatePeriodFilter();
         this.renderSummary();
         this.renderTransactions();
-        this.renderChart();
-        this.renderMonthlyChart();
         this.renderTopExpenses();
+        this.renderUpcomingInstallments();
+        this.renderTransactionsSidebar();
+
+        // Chart rendering may fail if Chart.js CDN is blocked
+        try {
+            this.renderChart();
+            this.renderMonthlyChart();
+        } catch (e) {
+            console.warn('Charts could not be rendered:', e.message);
+        }
     }
 
     renderSummary() {
@@ -604,6 +673,18 @@ export class UIController {
             balanceCard.style.color = 'var(--expense-color)';
         } else {
             balanceCard.style.color = 'var(--balance-color)';
+        }
+
+        // Update transactions sidebar summary
+        const sidebarIncome = document.getElementById('sidebar-income');
+        const sidebarExpense = document.getElementById('sidebar-expense');
+        const sidebarBalance = document.getElementById('sidebar-balance');
+
+        if (sidebarIncome) sidebarIncome.textContent = formatCurrency(totals.income);
+        if (sidebarExpense) sidebarExpense.textContent = formatCurrency(totals.expense);
+        if (sidebarBalance) {
+            sidebarBalance.textContent = formatCurrency(totals.balance);
+            sidebarBalance.style.color = totals.balance < 0 ? 'var(--expense-color)' : 'var(--income-color)';
         }
     }
 
@@ -835,6 +916,101 @@ export class UIController {
                 </div>
             </div>
         `).join('');
+    }
+
+    /**
+     * Render upcoming installments from all financings
+     */
+    renderUpcomingInstallments() {
+        const container = document.getElementById('upcoming-installments-list');
+        if (!container) return;
+
+        // Get financing manager from global financingUI if exists
+        if (typeof financingUI === 'undefined' || !financingUI || !financingUI.fm) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p class="text-muted">Nenhum financiamento cadastrado</p>
+                </div>
+            `;
+            return;
+        }
+
+        const upcomingInstallments = financingUI.fm.getUpcomingInstallments(5);
+
+        if (upcomingInstallments.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p class="text-muted">Nenhuma parcela pendente</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = upcomingInstallments.map(installment => {
+            const isOverdue = installment.status === 'overdue';
+            const statusClass = isOverdue ? 'overdue' : 'pending';
+            const statusIcon = isOverdue ? '🔴' : '🟡';
+
+            return `
+                <div class="expense-item ${statusClass}">
+                    <div class="expense-header">
+                        <div class="expense-category">
+                            <span>${statusIcon}</span>
+                            <span>${installment.financingName}</span>
+                            <small style="color: var(--text-muted); margin-left: 0.5rem;">
+                                Parcela ${installment.number}
+                            </small>
+                        </div>
+                        <span class="expense-amount">
+                            ${formatCurrency(installment.payment)}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        📅 Vence em: ${formatDate(installment.dueDate)}
+                        ${isOverdue ? '<span style="color: var(--expense-color);"> (Atrasada)</span>' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Render upcoming installments in transactions sidebar
+     */
+    renderTransactionsSidebar() {
+        const container = document.getElementById('transactions-upcoming-list');
+        if (!container) return;
+
+        // Get financing manager from global financingUI if exists
+        if (typeof financingUI === 'undefined' || !financingUI || !financingUI.fm) {
+            container.innerHTML = `<p class="text-muted">Nenhum financiamento cadastrado</p>`;
+            return;
+        }
+
+        const upcomingInstallments = financingUI.fm.getUpcomingInstallments(5);
+
+        if (upcomingInstallments.length === 0) {
+            container.innerHTML = `<p class="text-muted">Nenhuma parcela pendente</p>`;
+            return;
+        }
+
+        container.innerHTML = upcomingInstallments.map(installment => {
+            const isOverdue = installment.status === 'overdue';
+            const statusIcon = isOverdue ? '🔴' : '🟡';
+
+            return `
+                <div style="padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem;">${statusIcon} ${installment.financingName}</span>
+                        <span style="font-weight: 600; color: var(--expense-color);">${formatCurrency(installment.payment)}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        Parcela ${installment.number} • ${formatDate(installment.dueDate)}
+                        ${isOverdue ? ' <span style="color: var(--expense-color);">(Atrasada)</span>' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     getCategoryIcon(categoryName) {
